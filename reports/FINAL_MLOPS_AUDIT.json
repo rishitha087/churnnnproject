@@ -1,0 +1,194 @@
+{
+  "project": "Telco Customer Churn Prediction MLOps",
+  "audit_date": "2026-11-08",
+  "environment": {
+    "python_version": "3.12.6",
+    "sklearn_version": "1.8.0",
+    "mlflow_version": "3.16.1",
+    "fastapi_version": "0.141.1",
+    "platform": "Windows (sandbox)"
+  },
+  "labs": [
+    {
+      "lab": 1,
+      "title": "ML Project Initialization and Dataset Preparation",
+      "status": "COMPLETE",
+      "evidence": {
+        "raw_rows": 7043,
+        "raw_columns": 21,
+        "processed_rows": 7344,
+        "train_shape": [5875, 30],
+        "val_shape": [735, 30],
+        "test_shape": [1469, 30],
+        "artifacts": ["models/preprocessor.pkl", "data/processed/X_train.npy"]
+      }
+    },
+    {
+      "lab": 2,
+      "title": "Baseline Model Development and Evaluation",
+      "status": "COMPLETE",
+      "evidence": {
+        "models_trained": ["LogisticRegression", "DecisionTree", "RandomForest"],
+        "best_model": "RandomForest",
+        "best_metrics": {
+          "accuracy": 0.7801,
+          "precision": 0.5636,
+          "recall": 0.7423,
+          "f1": 0.6407,
+          "roc_auc": 0.8525
+        },
+        "artifacts": ["models/random_forest_baseline.pkl", "outputs/metrics/baseline_metrics.json"]
+      }
+    },
+    {
+      "lab": 3,
+      "title": "Git Version Control and Collaborative ML Workflows",
+      "status": "COMPLETE",
+      "evidence": {
+        "initial_commit": "a1cf085",
+        "files_committed": 166,
+        "author": "MLOps Student <mlops@churn.ai>",
+        "branches": ["main", "feature/modular-scripts", "feature/mlflow-tracking", "feature/data-validation", "feature/model-registry", "feature/fill-median"],
+        "tags": ["v0.1", "v1.0"]
+      }
+    },
+    {
+      "lab": 4,
+      "title": "Experiment Tracking and Reproducibility Using MLflow",
+      "status": "COMPLETE",
+      "evidence": {
+        "experiment_name": "Telco_Churn_Prediction",
+        "tracking_uri": "sqlite:///mlflow.db",
+        "runs_logged": 4,
+        "run_names": ["RF_Baseline", "RF_Shallow", "LR_Baseline", "DT_Baseline"],
+        "best_run_id": "7d6298bea41640cb9a4e4b6128df82d4",
+        "reproducibility_pct": 100,
+        "serialization_format": "cloudpickle"
+      }
+    },
+    {
+      "lab": 5,
+      "title": "Data Validation and Reproducible ML Pipelines",
+      "status": "COMPLETE",
+      "evidence": {
+        "validation_scenarios": ["missing_columns", "invalid_datatype", "unexpected_categoricals", "nan_injection"],
+        "all_detected": true,
+        "pipeline_idempotency": "VERIFIED",
+        "corruption_simulation": "reports/validation_report.json"
+      }
+    },
+    {
+      "lab": 6,
+      "title": "Model Registry and Version Management",
+      "status": "COMPLETE",
+      "evidence": {
+        "registry_name": "Telco_Churn_Production_Model",
+        "current_production_version": 3,
+        "production_recall": 0.7219,
+        "production_roc_auc": 0.8447,
+        "lifecycle_transitions": ["None", "Staging", "Production"],
+        "deployment_bundle": ["deployment/model.pkl", "deployment/preprocessor.pkl", "deployment/model_metadata.json"]
+      }
+    },
+    {
+      "lab": 7,
+      "title": "ML Pipeline Engineering",
+      "status": "COMPLETE",
+      "evidence": {
+        "pipeline_file": "src/mlops_pipeline/churn_prediction_pipeline.py",
+        "total_stages": 10,
+        "stages_passed": 10,
+        "quality_gate_recall": 0.7219,
+        "quality_gate_threshold": 0.70,
+        "quality_gate_status": "PASSED",
+        "pytest_tests": {"passed": 6, "failed": 0}
+      }
+    },
+    {
+      "lab": 8,
+      "title": "Pipeline Automation and CI Workflows Using GitHub Actions",
+      "status": "COMPLETE",
+      "evidence": {
+        "workflow_file": ".github/workflows/lab8_ci.yml",
+        "triggers": ["push (main/master)", "pull_request", "workflow_dispatch"],
+        "runner": "ubuntu-latest",
+        "python_version": "3.11",
+        "artifact_upload": "reports/, logs/, models/",
+        "yaml_valid": true,
+        "local_simulation": "PASSED"
+      }
+    },
+    {
+      "lab": 9,
+      "title": "Pipeline Failure Handling and Recovery",
+      "status": "COMPLETE",
+      "evidence": {
+        "failure_script": "src/mlops_pipeline/10_failure_injection.py",
+        "repetitions": 3,
+        "scenarios": 5,
+        "total_tests": 15,
+        "passed": 15,
+        "failed": 0,
+        "scenarios_tested": [
+          {"name": "missing_data", "strategy": "HALT", "passed": true},
+          {"name": "invalid_datatype", "strategy": "HALT", "passed": true},
+          {"name": "schema_mismatch", "strategy": "HALT", "passed": true},
+          {"name": "preprocessing_inconsistency", "strategy": "HALT", "passed": true},
+          {"name": "missing_model_artifact", "strategy": "RECOVER", "passed": true}
+        ],
+        "report_file": "reports/failure_report.json"
+      }
+    },
+    {
+      "lab": 10,
+      "title": "ML Model Serving and API Engineering Using FastAPI",
+      "status": "COMPLETE",
+      "evidence": {
+        "api_file": "api/main.py",
+        "endpoints": ["GET /health", "GET /metadata", "POST /predict", "POST /predict/batch"],
+        "functional_tests": {"passed": 23, "failed": 0},
+        "performance_tests": {"passed": 6, "failed": 0},
+        "performance_metrics": {
+          "single_request_latency_ms": 75.37,
+          "average_latency_ms": 19.38,
+          "throughput_req_per_sec": 51.68,
+          "reliability_pct": 100.0,
+          "prediction_consistency": true
+        },
+        "sample_prediction": {"prediction": 0, "churn_probability": 0.4198}
+      }
+    },
+    {
+      "lab": 11,
+      "title": "Containerization and Deployment Using Docker and Kubernetes",
+      "status": "PARTIAL",
+      "evidence": {
+        "dockerfile": "Dockerfile",
+        "base_image": "python:3.11-slim",
+        "k8s_deployment": "k8s/deployment.yaml",
+        "k8s_service": "k8s/service.yaml",
+        "docker_available": false,
+        "kubectl_available": false,
+        "dockerfile_valid": true,
+        "k8s_manifests_valid": true,
+        "local_api_tests": {"passed": 29, "failed": 0},
+        "limitation": "Docker CLI not installed in development environment. Manifests are configuration-validated and syntactically correct."
+      }
+    }
+  ],
+  "total_pytest_results": {
+    "test_pipeline_py": {"passed": 6, "failed": 0, "duration_s": 36.94},
+    "test_api_py": {"passed": 23, "failed": 0, "duration_s": 4.49},
+    "test_performance_py": {"passed": 6, "failed": 0, "duration_s": 5.70},
+    "total_passed": 35,
+    "total_failed": 0,
+    "overall_status": "PASSED"
+  },
+  "bugs_fixed": [
+    {"id": 1, "bug": "UntrustedTypesFoundException", "fix": "serialization_format=cloudpickle"},
+    {"id": 2, "bug": "pytest test_api.py hangs", "fix": "DirectTestClient in tests/direct_client.py"},
+    {"id": 3, "bug": "Quality Gate FAILED recall<0.70", "fix": "n_estimators=100, max_depth=10"},
+    {"id": 4, "bug": "deploy_production.py not found", "fix": "Copied + rewrote with shutil.which()"},
+    {"id": 5, "bug": "api/main.py TestClient hangs", "fix": "async def endpoints"}
+  ]
+}
