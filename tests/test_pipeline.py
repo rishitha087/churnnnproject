@@ -14,8 +14,17 @@ from src.evaluate import run_evaluation
 from src.predict import ChurnPredictor, get_sample_customer
 from src.validate_reproducibility import run_deterministic_test
 
+def _ensure_raw_data_restored():
+    """Ensure raw dataset is restored if a failure test backup was left behind."""
+    import shutil
+    raw_str = str(RAW_DATA_PATH)
+    backup_str = raw_str + ".lab9_backup"
+    if not os.path.exists(raw_str) and os.path.exists(backup_str):
+        shutil.copy2(backup_str, raw_str)
+
 def test_raw_dataset_exists_and_valid():
     """Verify raw dataset exists and contains expected columns and non-empty rows."""
+    _ensure_raw_data_restored()
     assert os.path.exists(str(RAW_DATA_PATH)), f"Raw data missing at {RAW_DATA_PATH}"
     df = pd.read_csv(str(RAW_DATA_PATH))
     assert df.shape[0] > 7000, f"Expected >7000 rows, found {df.shape[0]}"
@@ -26,6 +35,7 @@ def test_raw_dataset_exists_and_valid():
 
 def test_preprocessing_produces_clean_arrays():
     """Verify preprocessing produces correctly shaped, NaN-free NumPy arrays."""
+    _ensure_raw_data_restored()
     X_train, X_test, y_train, y_test = run_preprocessing()
     
     assert os.path.exists(str(X_TRAIN_PATH))

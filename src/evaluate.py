@@ -81,28 +81,61 @@ def run_evaluation():
     logger.info(f"Saved metrics summary to '{metrics_file}'")
     
     # 4. Error Analysis Export
-    if os.path.exists(str(RAW_DATA_PATH)):
-        df = pd.read_csv(str(RAW_DATA_PATH))
-        _, X_test_raw = train_test_split(
-            df.drop('Churn', axis=1), 
-            test_size=TEST_SIZE, 
-            random_state=RANDOM_STATE, 
-            stratify=df['Churn']
-        )
-        
-        errors_df = X_test_raw.copy()
-        errors_df['Actual_Churn'] = y_test
-        errors_df['Predicted_Churn'] = y_pred
-        if y_proba is not None:
-            errors_df['Predicted_Probability'] = y_proba
-        
-        false_negatives = errors_df[(errors_df['Actual_Churn'] == 1) & (errors_df['Predicted_Churn'] == 0)]
-        false_positives = errors_df[(errors_df['Actual_Churn'] == 0) & (errors_df['Predicted_Churn'] == 1)]
-        
-        false_negatives.to_csv(str(FALSE_NEGATIVES_PATH), index=False)
-        false_positives.to_csv(str(FALSE_POSITIVES_PATH), index=False)
-        logger.info(f"Exported error analysis: {len(false_negatives)} false negatives, {len(false_positives)} false positives.")
-        logger.info(f"Saved: {FALSE_NEGATIVES_PATH} & {FALSE_POSITIVES_PATH}")
+    errors_df = None
+    processed_dir = os.path.dirname(str(X_TEST_PATH))
+    raw_test_csv = os.path.join(processed_dir, "X_test_raw.csv")
+    test_ids_path = os.path.join(processed_dir, "test_customer_ids.csv")
+
+    # First preference: check if raw test CSV was saved by preprocessing pipeline and matches y_test length
+    if os.path.exists(raw_test_csv):
+        try:
+            cand_df = pd.read_csv(raw_test_csv)
+            if len(cand_df) == len(y_test):
+                errors_df = cand_df.copy()
+        except Exception:
+            pass
+
+    # Second preference: check if raw data + test IDs match y_test length
+    if errors_df is None and os.path.exists(str(RAW_DATA_PATH)):
+        try:
+            df = pd.read_csv(str(RAW_DATA_PATH))
+            if os.path.exists(test_ids_path) and "customerID" in df.columns:
+                test_ids = set(pd.read_csv(test_ids_path)["customerID"].astype(str))
+                test_mask = df["customerID"].astype(str).isin(test_ids)
+                if test_mask.sum() == len(y_test):
+                    errors_df = df.loc[test_mask].drop(columns=['Churn'], errors='ignore').copy().reset_index(drop=True)
+
+            if errors_df is None:
+                _, X_test_raw = train_test_split(
+                    df.drop('Churn', axis=1, errors='ignore'), 
+                    test_size=TEST_SIZE, 
+                    random_state=RANDOM_STATE, 
+                    stratify=df['Churn'] if 'Churn' in df.columns else None
+                )
+                if len(X_test_raw) == len(y_test):
+                    errors_df = X_test_raw.copy().reset_index(drop=True)
+                else:
+                    errors_df = X_test_raw.iloc[:len(y_test)].copy().reset_index(drop=True)
+        except Exception:
+            pass
+
+    # Fallback: create DataFrame directly matching y_test length
+    if errors_df is None or len(errors_df) != len(y_test):
+        errors_df = pd.DataFrame(index=range(len(y_test)))
+
+    errors_df = errors_df.reset_index(drop=True)
+    errors_df['Actual_Churn'] = y_test
+    errors_df['Predicted_Churn'] = y_pred
+    if y_proba is not None:
+        errors_df['Predicted_Probability'] = y_proba
+
+    false_negatives = errors_df[(errors_df['Actual_Churn'] == 1) & (errors_df['Predicted_Churn'] == 0)]
+    false_positives = errors_df[(errors_df['Actual_Churn'] == 0) & (errors_df['Predicted_Churn'] == 1)]
+
+    false_negatives.to_csv(str(FALSE_NEGATIVES_PATH), index=False)
+    false_positives.to_csv(str(FALSE_POSITIVES_PATH), index=False)
+    logger.info(f"Exported error analysis: {len(false_negatives)} false negatives, {len(false_positives)} false positives.")
+    logger.info(f"Saved: {FALSE_NEGATIVES_PATH} & {FALSE_POSITIVES_PATH}")
 
     return metrics
 

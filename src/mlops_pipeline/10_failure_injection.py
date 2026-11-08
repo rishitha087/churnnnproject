@@ -46,10 +46,11 @@ def run_script(script_path):
 
 
 def restore_file(backup_path, original_path):
-    if os.path.exists(original_path):
-        os.remove(original_path)
-
-    os.replace(backup_path, original_path)
+    if os.path.exists(backup_path):
+        if os.path.exists(original_path):
+            os.remove(original_path)
+        shutil.copy2(backup_path, original_path)
+        os.remove(backup_path)
 
 
 def test_missing_data(config):
@@ -58,7 +59,11 @@ def test_missing_data(config):
     data_path = PROJECT_ROOT / config["data"]["raw_path"]
     backup_path = Path(str(data_path) + ".lab9_backup")
 
-    os.replace(data_path, backup_path)
+    if not data_path.exists() and backup_path.exists():
+        shutil.copy2(backup_path, data_path)
+
+    shutil.copy2(data_path, backup_path)
+    os.remove(data_path)
 
     try:
         exit_code = run_script(
@@ -286,6 +291,17 @@ def run_failure_tests():
 
     with open(config_path, "r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
+
+    # Clean up any leftover .lab9_backup files before starting
+    for backup_file in PROJECT_ROOT.glob("**/*.lab9_backup"):
+        orig_path = Path(str(backup_file)[:-len(".lab9_backup")])
+        if not orig_path.exists() and backup_file.exists():
+            shutil.copy2(backup_file, orig_path)
+        if backup_file.exists():
+            try:
+                os.remove(backup_file)
+            except Exception:
+                pass
 
     repetitions = int(config["lab9"]["repetitions"])
 
