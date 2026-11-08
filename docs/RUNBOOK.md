@@ -1,89 +1,222 @@
-# Runbook — Churn Prediction MLOps
+# Runbook — Telco Churn Prediction MLOps Project
 
-## Before running
+## Prerequisites
 
-1. Start Docker Desktop and wait until the Docker engine and Kubernetes cluster are ready if the run needs Docker/Kubernetes operations.
-2. Ensure the local project checkout is on `main` and up to date.
-3. Confirm the project virtual environment exists at `C:\Users\jnane\Favorites\churn-prediction\venv`.
-4. Start the interactive GitHub Actions runner in a separate PowerShell window:
+### Python Environment
+```powershell
+python --version          # Requires 3.10+
+pip install -r requirements.txt
+```
 
-   ```powershell
-   cd C:\actions-runner
-   .\run.cmd
-   ```
+### Verify Key Packages
+```powershell
+python -c "import sklearn, mlflow, fastapi; print('All OK')"
+```
 
-   Keep this window open. GitHub should show `jnaneswar-mlops-runner` as `Idle` when no job is running.
+### Optional (for Lab 11)
+- Docker Desktop (for container build/run)
+- kubectl + minikube (for Kubernetes deployment)
 
-5. For Docker/Kubernetes operations, verify:
+---
 
-   ```powershell
-   docker info
-   kubectl get nodes
-   kubectl get deployment churn-api
-   ```
+## Lab Execution Commands
 
-## Start monitoring manually
+### Lab 1 — Dataset Preparation
+```powershell
+cd "churnn project"
+python src/preprocess.py
+# Output: models/preprocessor.pkl, data/processed/*.npy
+```
 
-1. Open the repository on GitHub.
-2. Select **Actions → Lab 13 - End-to-End MLOps**.
-3. Choose **Run workflow** and branch `main`.
-4. Open the run and inspect each step and log.
+### Lab 2 — Baseline Models
+```powershell
+python src/train.py
+python src/evaluate.py
+# Output: models/random_forest_baseline.pkl, outputs/metrics/baseline_metrics.json
+```
 
-The workflow is also configured to run at minute 17 of every hour in `Asia/Kolkata`. Because the runner is interactive, scheduled jobs can run only while the runner process is online and Windows is available.
+### Labs 1–6 (Full Run)
+```powershell
+python pipelines/run_all.py
+# Runs: preprocess → train → evaluate → mlflow → validate → registry
+```
 
-## Interpret the monitoring report
+### Lab 3 — Git Verification
+```powershell
+git log --oneline --all
+git branch -a
+git tag
+```
 
-Inspect `outputs/monitoring/monitor_trigger_report.json` from the project root.
+### Lab 4 — MLflow UI
+```powershell
+# View tracked experiments in browser
+mlflow ui --backend-store-uri sqlite:///mlflow.db --host 127.0.0.1 --port 5000
+# Then open: http://127.0.0.1:5000
+```
 
-| Status | Meaning |
-|---|---|
-| `no_drift` | The combined drift report did not identify drift; the pipeline is not called. |
-| `drift_waiting_for_data` | Drift was detected, but the incoming batch file is missing. |
-| `no_new_data_retraining_skipped` | The file exists, but its hash was already recorded as ingested. |
-| `retraining_completed` | New data was ingested and the main pipeline returned success. Check the lifecycle report for the promotion decision. |
-| `drift_analysis_failed` | Drift analysis failed; inspect the workflow log and the required source reports. |
+### Lab 5 — Data Validation
+```powershell
+python src/validate_data.py
+python src/simulate_data_corruption.py
+python src/preprocess_pipeline.py
+```
 
-A file named `new_churn.csv` is not automatically new data. The loader compares the file's SHA-256 hash with `data/raw/archive/dataset_lineage.json`. A new batch must pass schema validation and use customer IDs that do not overlap with the current dataset.
+### Lab 6 — Model Registry
+```powershell
+python src/train_registry.py
+python src/automate_lifecycle.py
+python src/generate_registry_report.py
+# Output: reports/lifecycle_report.json
+```
 
-## Important reports
+### Lab 7 — Full Pipeline (Recommended)
+```powershell
+# Run entire 10-stage pipeline (re-runs all stages)
+python src/mlops_pipeline/churn_prediction_pipeline.py --force
+# Output: models/, deployment/, reports/, logs/churn_prediction_pipeline_run_log.json
+```
 
-- `artifacts/data_load_report.json` — ingestion status and batch hash.
-- `data/raw/archive/dataset_lineage.json` — ingested batches and dataset versions.
-- `outputs/drift/drift_analysis_report.csv` — combined drift categories.
-- `outputs/monitoring/monitor_trigger_report.json` — trigger decision.
-- `reports/evaluation_report.json` — model evaluation metrics.
-- `reports/lifecycle_report.json` — promotion decision.
-- `reports/deployment_automation_report.json` — deployment outcome.
-- `logs/churn_prediction_pipeline_run_log.json` — stage-by-stage status.
+### Lab 8 — CI Validation
+```powershell
+# Validate CI YAML locally
+python -c "import yaml; yaml.safe_load(open('.github/workflows/lab8_ci.yml')); print('YAML valid')"
 
-## Lifecycle behavior
+# To trigger on GitHub: push this repository to a GitHub remote
+git remote add origin https://github.com/<username>/churn-mlops.git
+git push -u origin main
+# CI will trigger automatically on push to main
+```
 
-The recall quality gate is configured at 0.70. A candidate passing the minimum is not necessarily promoted: the lifecycle manager compares it with Production. `deploy_if_promoted.py` skips deployment when `reports/lifecycle_report.json` says `promoted: false`.
+### Lab 9 — Failure Handling
+```powershell
+python src/mlops_pipeline/10_failure_injection.py
+# Output: reports/failure_report.json (15/15 tests passed)
+```
 
-## Troubleshooting
+### Lab 10 — API Testing
+```powershell
+# Run all API + performance tests (no server needed)
+pytest tests/test_api.py tests/test_performance.py -v
 
-### Workflow stays queued
+# Start the API server for manual testing
+uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
 
-- In **Settings → Actions → Runners**, confirm the runner is online.
-- Confirm the PowerShell window running `C:\actions-runner\run.cmd` remains open.
-- Confirm the workflow requests labels `self-hosted`, `Windows`, and `X64`.
+# Manual curl tests (with server running)
+curl http://localhost:8000/health
+curl http://localhost:8000/metadata
+```
 
-### Kubernetes commands fail
+### Lab 11 — Docker and Kubernetes
+```powershell
+# Requires Docker Desktop installed
 
-Start Docker Desktop, wait for Kubernetes to become ready, then run `kubectl get nodes`. Retry after the cluster is available. A Kubernetes check failure can be caused by the cluster being unavailable rather than by the monitoring code.
+# Build image
+docker build -t churn-prediction-api:1.0 .
 
-### Retraining is skipped
+# Run container
+docker run -d --name churn-api -p 8000:8000 churn-prediction-api:1.0
 
-Check `artifacts/data_load_report.json` and `data/raw/archive/dataset_lineage.json`. `already_ingested` means the same file hash was consumed earlier. Do not delete or rewrite lineage just to force retraining. Obtain or generate a genuinely new, schema-valid batch with unique customer IDs.
+# Test container API
+curl http://localhost:8000/health
+curl -X POST http://localhost:8000/predict -H "Content-Type: application/json" `
+  -d '{"gender":"Male","SeniorCitizen":0,"Partner":"No","Dependents":"No","tenure":12,"PhoneService":"Yes","MultipleLines":"No","InternetService":"Fiber optic","OnlineSecurity":"No","OnlineBackup":"No","DeviceProtection":"No","TechSupport":"No","StreamingTV":"Yes","StreamingMovies":"Yes","Contract":"Month-to-month","PaperlessBilling":"Yes","PaymentMethod":"Electronic check","MonthlyCharges":85.5,"TotalCharges":1026.0}'
 
-### Model was not deployed
+# Stop container
+docker stop churn-api && docker rm churn-api
 
-Inspect `reports/lifecycle_report.json`. If `promoted` is false, deployment was correctly skipped. Passing the quality gate alone does not mean the candidate should replace Production.
+# Kubernetes (requires kubectl + cluster)
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+kubectl get pods
+kubectl get services
+```
 
-### Docker access denied from Python
+---
 
-Docker access has previously depended on the Windows integrity level of the virtual-environment Python executable. If direct Docker commands work but Python-launched Docker commands fail with a named-pipe access error, compare the integrity levels of the shell and `venv\Scripts\python.exe` before changing Docker permissions.
+## Run All Tests
+```powershell
+cd "churnn project"
+pytest tests/test_pipeline.py tests/test_api.py tests/test_performance.py -v
+# Expected: 35 passed
+```
 
-## Operational security
+---
 
-This runner executes workflow code on a personal Windows machine and can access local project resources. Avoid running untrusted pull-request code on it. Restrict repository permissions and workflow triggers to trusted contributors.
+## Master One-Command Workflow
+```powershell
+cd "churnn project"
+# Step 1: Run Labs 1-6 pipeline
+python pipelines/run_all.py
+# Step 2: Run full 10-stage integrated pipeline
+python src/mlops_pipeline/churn_prediction_pipeline.py --force
+# Step 3: Run failure handling tests
+python src/mlops_pipeline/10_failure_injection.py
+# Step 4: Run all pytest tests
+pytest tests/ -v --ignore=tests/test_local_vs_container.py
+```
+
+---
+
+## Common Troubleshooting
+
+### ImportError on sklearn model load
+**Symptom:** `InconsistentVersionWarning` when loading `.pkl` files  
+**Cause:** Model was saved with a different sklearn version  
+**Fix:** Retrain by running `python src/mlops_pipeline/churn_prediction_pipeline.py --force`
+
+### MLflow UntrustedTypesFoundException
+**Symptom:** `skops.io.exceptions.UntrustedTypesFoundException`  
+**Cause:** MLflow 3.x uses skops serialization by default  
+**Fix:** Already fixed — all `log_model()` calls use `serialization_format="cloudpickle"`
+
+### Quality Gate FAILED
+**Symptom:** `Quality Gate FAILED: recall=X.XXXX < 0.7000`  
+**Cause:** Model hyperparameters produce low recall  
+**Fix:** Ensure `config.yaml` has `n_estimators: 100, max_depth: 10, class_weight: balanced`
+
+### pytest test_api.py hangs
+**Symptom:** Tests run indefinitely  
+**Cause:** Starlette TestClient + anyio blocking portal conflict  
+**Fix:** Already fixed — `tests/direct_client.py` provides `DirectTestClient` that calls endpoint functions directly without sockets
+
+### Docker not found
+**Symptom:** `docker: command not found`  
+**Cause:** Docker Desktop not installed  
+**Fix:** Install Docker Desktop from https://www.docker.com/products/docker-desktop/  
+Then run: `docker build -t churn-prediction-api:1.0 .`
+
+---
+
+## Key File Locations
+
+| Artifact | Path |
+|----------|------|
+| Main pipeline | `src/mlops_pipeline/churn_prediction_pipeline.py` |
+| Production model | `deployment/model.pkl` |
+| Preprocessor | `deployment/preprocessor.pkl` |
+| Model metadata | `deployment/model_metadata.json` |
+| MLflow DB | `mlflow.db` |
+| MLflow artifacts | `mlruns/` |
+| Config | `config.yaml` |
+| CI workflow | `.github/workflows/lab8_ci.yml` |
+| Failure report | `reports/failure_report.json` |
+| Final audit | `reports/FINAL_MLOPS_AUDIT.md` |
+| Test results | `reports/FINAL_TEST_RESULTS.json` |
+
+---
+
+## Environment Versions (Tested)
+
+| Package | Version |
+|---------|---------|
+| Python | 3.12.6 |
+| scikit-learn | 1.8.0 |
+| MLflow | 3.16.1 |
+| FastAPI | 0.141.1 |
+| Starlette | 1.7.0 |
+| pandas | 3.0.2 |
+| pytest | 9.1.1 |
+| uvicorn | ≥0.20 |
+| pydantic | ≥2.0 |
+| joblib | ≥1.3 |

@@ -35,6 +35,7 @@
                     "actual": "RECOVERED",
                     "failure_detected": true,
                     "recovery_succeeded": true,
+                    "recovery_method": "mlflow_registry",
                     "passed": true
                 }
             ],
@@ -73,6 +74,7 @@
                     "actual": "RECOVERED",
                     "failure_detected": true,
                     "recovery_succeeded": true,
+                    "recovery_method": "mlflow_registry",
                     "passed": true
                 }
             ],
@@ -111,6 +113,7 @@
                     "actual": "RECOVERED",
                     "failure_detected": true,
                     "recovery_succeeded": true,
+                    "recovery_method": "mlflow_registry",
                     "passed": true
                 }
             ],
