@@ -240,3 +240,4 @@ cat reports/lifecycle_report.json
 ## 11. Conclusion
 
 Lab 6 established a complete model registry workflow using MLflow's built-in Model Registry. Models are versioned with full metadata and lineage, staged through validation before production promotion, and older versions are archived rather than deleted — preserving rollback capability. The champion-challenger pattern was demonstrated by promoting Version 3 (highest recall) to Production while archiving predecessors. The deployment bundle created here feeds directly into the FastAPI serving layer in Lab 10.
+

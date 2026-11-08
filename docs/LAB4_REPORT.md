@@ -208,3 +208,4 @@ python src/validate_reproducibility.py
 ## 11. Conclusion
 
 Lab 4 demonstrated full MLflow experiment tracking for the Churn prediction project. All four model configurations were logged with their hyperparameters and metrics in a persistent SQLite database. Reproducibility was verified at 100% — re-running with the same seed produces byte-identical metrics. The MLflow UI provides a visual interface for experiment comparison and artifact inspection, essential for collaborative ML workflows. The best run (RF_Baseline) was automatically promoted to the Model Registry in Lab 6.
+

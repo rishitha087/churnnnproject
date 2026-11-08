@@ -269,3 +269,4 @@ Quality gate: recall=0.7219 ≥ 0.70 ✅
 ## 11. Conclusion
 
 Lab 8 established automated CI for the MLOps pipeline using GitHub Actions. The workflow triggers on every push to `main` and every pull request, runs the complete 10-stage pipeline in a fresh Ubuntu environment, validates the quality gate (recall ≥ 0.70), and archives all pipeline artifacts for post-run inspection. Path-based filtering ensures CI only runs when ML-relevant files change. This automation transforms manual ML experimentation into a disciplined, reproducible CI process — the foundation of production-grade MLOps.
+

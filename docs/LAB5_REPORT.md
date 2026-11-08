@@ -249,3 +249,4 @@ tests/test_pipeline.py::test_preprocessing_produces_clean_arrays PASSED
 ## 11. Conclusion
 
 Lab 5 implemented a robust data validation layer that acts as a quality gate before data enters the ML pipeline. The schema-based approach catches real-world data quality issues (schema drift, type errors, unexpected values) before they silently corrupt predictions. The sklearn Pipeline ensures that validation, imputation, encoding, and scaling are chained atomically, with no data leakage possible. Idempotency tests confirm that the pipeline can be safely applied to the same data multiple times — an essential property for retry-safe production systems.
+

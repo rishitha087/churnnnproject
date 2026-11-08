@@ -242,3 +242,4 @@ git tag              # Confirm v0.1 and v1.0 exist
 ## 11. Conclusion
 
 Lab 3 demonstrated a full Git-based version control workflow for the MLOps project. The repository was initialized with a comprehensive `.gitignore`, all 166 project files committed atomically, and feature branches created for each lab's development work. The branching strategy (GitHub Flow with feature branches) mirrors industry practice for ML teams. Git tags enable versioned model releases tied to specific code states, ensuring complete traceability from experiment to production deployment.
+

@@ -265,3 +265,4 @@ tests/test_pipeline.py::test_pipeline_reproducibility              PASSED
 ## 11. Conclusion
 
 Lab 9 implemented comprehensive failure handling and recovery for all realistic MLOps pipeline failure modes. The structured approach — HALT for data quality failures, RECOVER for infrastructure failures — mirrors production incident response playbooks. All 15 test cases (3 repetitions × 5 scenarios) passed with 100% success rate. The structured `failure_report.json` provides auditable evidence of failure detection capability. This failure handling layer is what distinguishes a research script from a production-grade ML system.
+

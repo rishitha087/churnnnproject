@@ -198,3 +198,4 @@ tests/test_pipeline.py::test_evaluation_metrics_and_error_exports PASSED
 ## 11. Conclusion
 
 Lab 2 established three baseline models for churn prediction. Random Forest achieved the highest overall performance with ROC-AUC=0.8525 and Recall=0.7423, making it the preferred model for downstream MLflow tracking and registry. The evaluation methodology was leak-free, using preprocessor fit only on training data. The baseline metrics provide a performance floor against which future experiments (Lab 4 MLflow tracking) can be compared for regression detection.
+

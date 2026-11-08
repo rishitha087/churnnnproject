@@ -285,3 +285,4 @@ tests/test_performance.py::test_throughput            PASSED
 ## 11. Conclusion
 
 Lab 10 delivered a production-quality FastAPI serving layer with 4 REST endpoints, Pydantic input validation, graceful error handling, and train-serving consistency. The API uses the same preprocessor as training — the single most critical correctness requirement. All 23 functional tests and 6 performance tests passed. The API achieves 51.68 req/s throughput with average latency of 19.38ms — well within acceptable production thresholds. The API is ready for containerization in Lab 11.
+

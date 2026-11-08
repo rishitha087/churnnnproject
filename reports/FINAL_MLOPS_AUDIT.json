@@ -192,3 +192,4 @@
     {"id": 5, "bug": "api/main.py TestClient hangs", "fix": "async def endpoints"}
   ]
 }
+

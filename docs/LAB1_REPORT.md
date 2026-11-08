@@ -189,3 +189,4 @@ tests/test_pipeline.py::test_preprocessing_produces_clean_arrays PASSED
 ## 11. Conclusion
 
 Lab 1 successfully initialized the MLOps project structure and established a reproducible preprocessing pipeline for the Telco Churn dataset. The ColumnTransformer-based approach ensures that the same transformations applied during training can be reapplied consistently during inference, eliminating train-serving skew. Fixed random seeds (42) guarantee identical splits across all runs. The preprocessed data, with 30 engineered features, is ready for model training in Lab 2.
+

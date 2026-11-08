@@ -371,3 +371,4 @@ print('K8s manifests: VALID ✅')
 ## 11. Conclusion
 
 Lab 11 established a complete containerization and Kubernetes deployment configuration for the Churn Prediction API. The Dockerfile follows best practices (slim base image, layer caching, minimal build context via `.dockerignore`). Kubernetes manifests configure a Deployment with self-healing (pod restart on failure) and a NodePort Service for external access. The same `model.pkl` and `preprocessor.pkl` artifacts validated by the quality gate in Lab 7 are packaged into the container, ensuring train-serving consistency. While Docker Desktop was unavailable in the development environment, all configuration has been validated syntactically and the API itself passes 29/29 tests — confirming that containerization would succeed on any Docker-capable host.
+

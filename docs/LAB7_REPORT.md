@@ -247,3 +247,4 @@ tests/test_pipeline.py::test_pipeline_reproducibility              PASSED
 ## 11. Conclusion
 
 Lab 7 delivered a fully integrated, modular, 10-stage MLOps pipeline that takes raw data from a CSV file and produces a production-ready model deployment bundle — entirely from one command. The quality gate prevents model regressions from reaching production. Stage modularity allows individual stages to be re-run or replaced without affecting others. The pipeline's log provides a complete audit trail of every execution. This pipeline forms the backbone of the CI automation in Lab 8 and the failure handling in Lab 9.
+
