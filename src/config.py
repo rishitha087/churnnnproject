@@ -41,6 +41,15 @@ LOGS_DIR = BASE_DIR / "logs"
 LOG_FILE_PATH = LOGS_DIR / "pipeline.log"
 
 # Experiment Tracking
+MLFLOW_DB_PATH = BASE_DIR / "mlflow.db"
+MLFLOW_TRACKING_URI = f"sqlite:///{MLFLOW_DB_PATH.as_posix()}"
+os.environ["MLFLOW_TRACKING_URI"] = MLFLOW_TRACKING_URI
+try:
+    import mlflow
+    mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+except Exception:
+    pass
+
 MLFLOW_EXPERIMENT_NAME = "Telco_Churn_Prediction"
 REGISTERED_MODEL_NAME = "Telco_Churn_Production_Model"
 

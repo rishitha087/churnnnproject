@@ -17,9 +17,8 @@ model:
   class_weight: balanced
 
 mlflow:
-  # Leave empty for local MLflow. For GitHub Actions, set the
-  # MLFLOW_TRACKING_URI environment variable or put a server URI here.
-  tracking_uri: ""
+  # Local SQLite database inside churnn project
+  tracking_uri: "sqlite:///mlflow.db"
   experiment_name: churn_prediction_model_training_lab7
 
 registry:
