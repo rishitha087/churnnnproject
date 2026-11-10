@@ -1,39 +1,41 @@
-name: Lab 9 - Failure and Recovery Tests
+name: Lab 9 - Churn Pipeline Failure & Recovery Resilience Suite
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * 1" # Weekly Monday at 3am
 
 jobs:
-  failure-tests:
+  failure-recovery-tests:
+    name: Run Failure Injection & Auto-Recovery
     runs-on: ubuntu-latest
-    env:
-      MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: "pip"
 
       - name: Install dependencies
-        run: python -m pip install -r requirements.txt
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-      - name: Build the normal MLOps pipeline
-        run: python src/mlops_pipeline/churn_prediction_pipeline.py
+      - name: Run Lab 9 Failure Injection Suite
+        run: |
+          python src/mlops_pipeline/10_failure_injection.py
 
-      - name: Run Lab 9 failure and recovery tests
-        run: python src/mlops_pipeline/10_failure_injection.py
-
-      - name: Upload Lab 9 evidence
+      - name: Upload Resilience Evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: lab9-failure-tests-${{ github.run_number }}
+          name: churn-failure-report-${{ github.run_number }}
           path: |
-            reports/**
-            artifacts/**
-            logs/**
-            outputs/**
+            reports/
+            artifacts/
+            logs/
           if-no-files-found: ignore

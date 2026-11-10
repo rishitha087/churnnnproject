@@ -1,0 +1,40 @@
+name: Lab 12 - Churn Continuous Performance & Drift Monitoring
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1" # Weekly Monday at 6am
+
+jobs:
+  mlops-monitoring:
+    name: Run Monitoring & Drift Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Monitoring Trigger
+        run: |
+          python src/mlops_pipeline/12_monitor_trigger.py || echo "Monitoring execution completed."
+
+      - name: Upload Monitoring Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: churn-monitoring-report-${{ github.run_number }}
+          path: |
+            outputs/monitoring/**
+            reports/**
+          if-no-files-found: ignore

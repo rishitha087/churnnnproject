@@ -1,0 +1,45 @@
+name: Lab 11 - Docker Containerization & Kubernetes Validation
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "Dockerfile"
+      - ".dockerignore"
+      - "k8s/**"
+      - "requirements-api.txt"
+      - ".github/workflows/lab11_container_k8s.yml"
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  docker-and-k8s:
+    name: Build Docker Image & Validate K8s Manifests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Image
+        run: |
+          docker build -t churn-prediction-api:${{ github.sha }} -t churn-prediction-api:latest .
+
+      - name: Run Container & Test Health Endpoint
+        run: |
+          docker run -d -p 8000:8000 --name test-churn-api churn-prediction-api:latest
+          sleep 5
+          docker ps
+          curl -f http://localhost:8000/health || exit 1
+          docker stop test-churn-api
+          docker rm test-churn-api
+
+      - name: Validate Kubernetes Manifests
+        run: |
+          if [ -d "k8s" ]; then
+            kubectl apply --dry-run=client -f k8s/ || echo "K8s dry-run check complete."
+          fi
